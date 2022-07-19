@@ -1,0 +1,147 @@
+{% extends "seudo/base-dashboard.html" %}
+
+{% block content %}
+    {% if tables and not searching %}
+        <div id="list-table" class="table-responsive">
+
+            <table class="table table-hover table-bordered sde-table">
+
+                <thead>
+                <tr>
+                    <th class="globalStatus"></th>
+                    <th class="table-name">
+                        Name
+                        <div class="search">
+                            <form role="search">
+                                <div class="form-group material condensed">
+                                    <input type="text" id="search" class="form-control search-bar" name="search"
+                                           required="">
+                                    <label for="search">Search by table name</label>
+                                    <i class="fas fa-times btn-cancel" onclick=onclick="location.href='/workspace/tablist'"></i>
+                                </div>
+                            </form>
+                        </div>
+                    </th>
+                    <th class="table-date">Insert date</th>
+                    <th class="table-date">Last Edit</th>
+                    <th class="table-status">
+                        Status
+                        <div class="filter-wrapper">
+                            <div class="filter btn-group btn-group-sm">
+                                <div class="btn TODO" data-filter="TODO"></div>
+                                <div class="btn DOING" data-filter="DOING"></div>
+                                <div class="btn DONE" data-filter="DONE"></div>
+                            </div>
+                        </div>
+                    </th>
+{#                    <th class="table-time">Execution Time</th>#}
+                    <th class="table-buttons">
+                        Actions
+                        <div>
+                            <div class="btn-group">
+                                <a id="deleteAll"
+                                   class="btn btn-danger btn-sm {% if current_process_all_task_id %} disabled {% endif %}"
+                                   data-toggle="modal"
+                                   data-target="#modal-delete">
+                                    <i class="fa fa-trash"></i>
+                                    <span>Delete all</span>
+                                </a>
+                                <a id="processAll"
+                                   class="btn btn-primary btn-sm {% if current_process_all_task_id %} disabled {% endif %}">
+                                    <i class="fa fa-cogs"></i>
+                                    <span>Process all</span>
+                                </a>
+
+                            </div>
+                        </div>
+
+                    </th>
+                </tr>
+                </thead>
+                <tbody id="table-list-data">
+                    {% include 'seudo/table_search.html' %}
+                </tbody>
+
+            </table>
+
+        </div>
+    {% endif %}
+
+
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function(){
+
+            let delay = (() => {
+                let timer = 0;
+                return function (callback, ms) {
+                    clearTimeout(timer);
+                    timer = setTimeout(callback, ms);
+                };
+            })();
+
+            $('#search').on('keyup', function () {
+                delay(function () {
+                    filter_tables();
+                }, 500);
+
+            });
+
+            // add cancel icon when typing in in SEARCH bar
+            $('.search input').on('keyup', function () {
+                const searchVal = $('input#search').val();
+                if (searchVal !== '') {
+                    $('.search .btn-cancel').show();
+                } else {
+                    $('.search .btn-cancel').hide();
+                }
+            });
+
+            // clear SEARCH when click on cancel icon
+            $('.search .btn-cancel').click(function () {
+                $('.search input').val('');
+                $('.search .btn-cancel').hide();
+                filter_tables();
+            });
+
+            let input = $('.search input').val();
+
+        });
+
+        function filter_tables() {
+
+            let input = $('.search input').val();
+            console.log(input);
+
+            $.ajax({
+                url: '/workspace/tablist',
+                data: {
+                    'search': input,
+                },
+                dataType: 'json',
+                type: 'GET',
+                success: function (data) {
+                    //hide pagination if something is filtered
+                    {#if (input == "") {#}
+                        {#$('.pagination-wrapper').show();#}
+                    {#    $('#list-table').removeClass('noPagination');#}
+                    {# } else {#}
+                        {#$('.pagination-wrapper').hide();#}
+                    {#    $('#list-table').addClass('noPagination');#}
+                    {# }#}
+
+                    $('#table-list-data').fadeTo('fast', 0).promise().then(() => {
+                        console.log("############################")
+                        $('#table-list-data').html(data.table_list_html);
+                        $('#table-list-data').fadeTo('fast', 1);
+                    });
+                }
+            });
+
+        }
+
+    </script>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "seudo/base-dashboard.html" %}
+
+{% block content %}
+<style type="text/css">
+    .button__text {
+        font-size:1.5em;
+    }
+    .button__icon {
+        font-size: 1.4em;
+        margin-left: auto;
+        /*color: #000000;*/
+    }
+    .login__submit {
+        background: #fff;
+        margin-top: 30px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 16px 20px;
+        border-radius: 26px;
+        border: 3px solid #000000;
+        /*text-transform: uppercase;*/
+        display: flex;
+        align-items: center;
+        width: 45%;
+        color: #000000;
+        /*box-shadow: 0px 2px 2px #6d6d6d;*/
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .login__submit:active,
+    .login__submit:focus,
+    .login__submit:hover {
+        border-color: #000000;
+        outline: none;
+        background: #000000;
+        color: #ffffff;
+    }
+    input[type="file"] {
+        display: none;
+    }
+    .custom-file-upload {
+        border: 3px solid #000000;
+        display: inline-block;
+        {#padding: 6px 12px;#}
+        cursor: pointer;
+        font-size: 1.5em;
+        text-align: center;
+        width: auto;
+        {#border-radius: 15px;#}
+    }
+
+    input[type="submit"] {
+        font-weight: bolder;
+        background-color: white;
+        font-size: 1.5em;
+        margin: 6vh auto;
+        {#border-radius: 10px;#}
+        color: black;
+        border: black 3px solid;
+        {#border-radius: 15px;#}
+        text-align: center;
+        width: auto;
+    }
+
+    .uploadbox {
+        height: 50%;
+        width: 70%;
+        margin: 10vh auto;
+        display: table;
+        border-radius: 50px;
+        background: #ffffff;
+        box-shadow: inset 20px 20px 30px #d9d9d9,
+                    inset -20px -20px 30px #ffffff;
+
+    }
+
+    .uploadp {
+        color: #383838;
+        height: 4em;
+        font-weight: 600;
+        {#bottom: 0;#}
+        display: table-cell;
+        text-shadow: 1px 1px 1px #bebebe, -1px -1px 1px #fff;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 3em;
+        border: #1f292d;
+    }
+
+</style>
+
+<div style="width: 100%;position: relative;">
+    <div style="height: 93vh;width: 49.9%;
+    border:5px solid #1f292d;
+    border-radius:10px; float: left;
+            background-color: #fcfcfc;
+    {#background-image: url(/static/seudo/img/upload.png);#}
+    background-size: cover">
+        <div style="width: 100%;height:40vh;">
+{#            <div style="height: 30%;width: 1px"></div>#}
+            <div class="uploadbox">
+                <p class="uploadp">Please Upload CSV Files</p>
+            </div>
+        </div>
+        <div style="width: 60%;height:40vh;margin: 0 auto;text-align: center">
+            <div style="width:100%;">
+                <form method="post" action="" enctype="multipart/form-data" >
+                    {% csrf_token %}
+                    <label for="file-upload" class="custom-file-upload login__submit">
+                        <i class="fas fa-cloud-upload"></i> Choose csv file
+                    </label>
+{#                    <br>#}
+                    <input id="file-upload" type="file" value="files" name="files">
+{#                    <input type="file" name="files" value="files" style="font-size: 1.5em;margin-left:15%;background-image: linear-gradient(transparent,transparent 1.49em,#111 1.5em)">#}
+                    <input type="submit" class="login__submit" value="Upload">
+
+                </form>
+                <button class="button login__submit" onclick="location.href='/workspace/tablist'">
+                    <span class="button__text">
+                        <strong>Annotate Now</strong>
+                    </span>
+                    <i class="button__icon fas fa-chevron-right"></i>
+                </button><!--            <a class="btn" href="{% url 'workspace' %}" style="align-self: center">Start now to annotate</a>-->
+            </div>
+        </div>
+    </div>
+    <div style="width: 49.9%;height:93vh;float: right;border:5px solid #1f292d;border-radius:10px;overflow: auto;background-color: white;display: inline">
+        <table class="table" style="background-color: #f2f2f2;border-bottom: #6b6b6b 2px solid">
+            <thead>
+                <tr>
+                    <th class="table-name" style="text-align: center;font-size: 2em;border-bottom: #6b6b6b 2px solid">
+                        <strong>Uploaded Table Name(s)</strong>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="table-list-data">
+                {% include 'seudo/tablename-list.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% if iffile == False %}
+    <script type="text/javascript">
+			alert("Please upload file");
+    </script>
+{% endif %}
+
+{% if valid == False %}
+    <script type="text/javascript">
+            alert("Please upload valid file");
+</script>
+{% endif %}
+
+
+{% endblock %}

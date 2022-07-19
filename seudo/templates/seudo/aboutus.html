@@ -1,0 +1,47 @@
+{% extends "seudo/base-dashboard.html" %}
+
+{% block content %}
+{#    SHEN shuyang <br>#}
+{#    shua@seu.edu.cn <br>#}
+{#    2022.6#}
+    {% load staticfiles %}
+    <div class="aboutus-intro">
+        <div class="person">
+            <div class="container">
+                <div class="container-inner">
+                    <img class="circle" src="{% static 'seudo/img/left.jpg' %}"/>
+                    <img class="img img1" src="{% static 'seudo/img/me.png' %}"/>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="pname">Shen</div>
+            <div class="title">Good Fellow</div>
+            <div class="contact-ways">humbornjo@gmail.com</div>
+
+        </div>
+        <div class="person">
+            <div class="container">
+                <div class="container-inner">
+                    <img class="circle" src="{% static 'seudo/img/middle.jpg' %}"/>
+                    <img class="img img2" src="{% static 'seudo/img/mantis.png' %}"/>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="pname">MantisTable</div>
+            <div class="title">Instructor</div>
+            <a href="https://www.cs.ox.ac.uk/isg/challenges/sem-tab/2019/papers/MantisTable.pdf" class="contact-ways">Paper source</a>
+        </div>
+        <div class="person">
+            <div class="container">
+                <div class="container-inner">
+                    <img class="circle" src="{% static 'seudo/img/right.jpg' %}"/>
+                    <img class="img img3" src="{% static 'seudo/img/seu.png' %}"/>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="pname">Jin. Yang. Ding.</div>
+            <div class="title">Teacher & Friends</div>
+            <a href="https://jujuhoo.gitee.io/homepage/students/" class="contact-ways">Thanks for your support</a>
+        </div>
+    </div>
+{% endblock %}

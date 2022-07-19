@@ -1,0 +1,88 @@
+{% extends "seudo/base.html" %}
+
+{% block container %}
+    {% include "seudo/shared/loading.html" %}
+    <div class="wrapper">
+
+        <header class="main-header" style="background-color:black">
+            <a href="{% url 'home' %}" class="sidebar-toggle logo" data-toggle="push-menu" role="button">
+                <span class="panel-icon"> </span>
+            </a>
+
+            <nav class="navbar navbar-static-top">
+
+                {% block table_info %}
+                    {{ block.super }}
+
+                    <ul class="tableInfo">
+                        <li id="tables_count" class="stats">
+                            <span class="number">{{ tables_count }}</span>
+                            <span class="description">Tables</span>
+                        </li>
+                        <li id="processing_tables_completed" class="stats">
+                            <span class="number">{{ tables_completed }}</span>
+                            <span class="description">Tables completed</span>
+                        </li>
+                        <li id="processing_tables_count" class="stats">
+                            <span class="number">{{ tables_in_progress }}</span>
+                            <span class="description">Tables in progress</span>
+                        </li>
+                    </ul>
+                {% endblock %}
+
+            </nav>
+        </header>
+
+        <aside class="main-sidebar">
+            <section class="sidebar">
+                <ul class="sidebar-menu" data-widget="tree">
+                    {% with request.resolver_match.url_name as url_name %}
+                        <li {% if url_name == 'home' %}class="active"{% endif %}>
+                            <a href="{% url 'home' %}">
+                                <i class="fas fa-keyboard"></i>
+                                <span class="sidebar-span" style="background-color: white" >Home</span>
+                            </a>
+                        </li>
+
+                        <li {% if url_name == 'tablist' %}class="active"{% endif %}>
+                            <a href="{% url 'tablist' %}">
+                                <i class="fas fa-table"></i>
+                                <span class="sidebar-span" style="background-color: white" >List Tables</span>
+                            </a>
+                        </li>
+                        <li {% if url_name == 'upload' %}class="active"{% endif %}>
+                            <a href="{% url 'upload' %}">
+                                <i class="fas fa-plus"></i>
+                                <span class="sidebar-span" style="background-color: white" >Insert Tables</span>
+                            </a>
+                        </li>
+
+                        <li {% if url_name == 'export' %}class="active"{% endif %}>
+                            <a href="{% url 'export' %}">
+                                <i class="fas fa-download"></i>
+                                <span class="sidebar-span" style="background-color: white" >Export</span></a>
+                        </li>
+
+                        <li {% if url_name == 'aboutus' %}class="active"{% endif %}>
+                            <a href="{% url 'aboutus' %}">
+                                <i class="far fa-file-alt"></i>
+                                <span class="sidebar-span" style="background-color: white" >About us</span>
+                            </a>
+                        </li>
+
+                    {% endwith %}
+                </ul>
+
+            </section>
+        </aside>
+
+        <div class="content-wrapper">
+            {% block process %}{% endblock %}
+
+            <section class="content">
+                {% block content %}{% endblock %}
+            </section>
+        </div>
+
+    </div>
+{% endblock %}

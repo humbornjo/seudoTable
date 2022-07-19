@@ -1,0 +1,76 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}seudoTable{% endblock %}</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% block favicon %}
+        {% load static %}
+        <link rel="shortcut icon" href="{% static '/seudo/favicon.png' %}"/>
+    {% endblock %}
+
+<!--    &lt;!&ndash; Google Font &ndash;&gt;-->
+<!--    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">-->
+
+    {% block css %}
+        {% load static %}
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="{% static '/bootstrap/dist/css/bootstrap.css' %}">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+              integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+              crossorigin="anonymous">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="{% static '/ionicons/dist/css/ionicons.css' %}">
+        <!-- Theme style -->
+        <link rel="stylesheet" href="{% static '/admin-lte/dist/css/AdminLTE.css' %}">
+        <!-- AdminLTE Skins -->
+        <link rel="stylesheet" href="{% static '/admin-lte/dist/css/skins/_all-skins.css' %}">
+        <!-- Handsontable -->
+        <link rel="stylesheet" href="{% static '/handsontable/dist/handsontable.full.css' %}">
+        <!-- CSS -->
+        <link rel="stylesheet" href="{% static '/seudo/css/style.css' %}">
+        <link rel="stylesheet" href="{% static '/seudo/css/aboutus.css' %}">
+        <link rel="stylesheet" href="{% static '/seudo/css/base-dashboard.css' %}">
+
+        <!--Google Chart-->
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+        <!--HandleBars.js-->
+        <script src="{% static '/handlebars/dist/handlebars.min.js' %}"></script>
+
+    {% endblock %}
+</head>
+
+<body class="sde-fixed sidebar-mini sidebar-collapse">
+
+{% block container %}{% endblock %}
+
+{% block modal %}{% endblock %}
+
+{% block javascript %}
+    {% load static %}
+    <!-- jQuery -->
+    <script src="{% static '/jquery/dist/jquery.min.js' %}"></script>
+    <!-- Bootstrap -->
+    <script src="{% static '/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <!-- SlimScroll -->
+    <script src="{% static '/jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
+    <!-- AdminLTE -->
+    <script src="{% static '/admin-lte/dist/js/adminlte.min.js' %}"></script>
+    <!-- Handsontable -->
+    <script src="{% static '/handsontable/dist/handsontable.full.min.js' %}"></script>
+    <!-- Custom JS -->
+    <script src="{% static '/seudo/js/app.js' %}"></script>
+    <script src="{% static '/seudo/js/eventsubscriber.js' %}"></script>
+
+<!--    {% include "seudo/shared/socket.html" %}-->
+
+{% endblock %}
+
+</body>
+
+</html>

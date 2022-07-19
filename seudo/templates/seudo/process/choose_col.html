@@ -1,0 +1,110 @@
+{% extends "seudo/base-process.html" %}
+
+{% block title %}
+    seudoTable
+{% endblock %}
+
+
+{% block run_again %}{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script>
+        {# HANDSONTABLE #}
+        let data = {{table_datas|safe}};
+
+        let container = document.getElementById('handsontable');
+        handsontable = new Handsontable(container, {
+            colHeaders: {{ table.header|safe }},
+            columnSorting: false,
+            data: data,
+            licenseKey: 'non-commercial-and-evaluation',
+            minSpareRows: 0,
+            preventOverflow: 'horizontal',
+            readOnly: true,
+            copyable: true,
+            sortIndicator: true,
+            selectionMode: 'single',
+            stretchH: 'all',
+            height: calcPageContentHeight(),
+
+            // column color emphasis for neCols
+            cells: function (row, col, prop) {
+                    let cellProperties = {};
+                    cellProperties.renderer = colorColumnsByType; // uses function directly
+                    return cellProperties;
+            },
+            contextMenu: {
+                items: {
+                    "menu-column-select": {
+                        key: "column_select",
+                        name: "Select as NE column",
+                        callback: function(key, options, selection , clickEvent) {
+                            if (!neCols.includes(options[0].start.col)){
+                                neCols.push(options[0].start.col)
+                                neCols.sort(increase)
+
+                                this.render()
+                            }
+                            console.log(neCols);
+                        }
+                    },
+
+                    "menu-column-cancel": {
+                        key: "column_cancel",
+                        name: "Cancel selection as NE column",
+                        callback: function(key, options) {
+                            if (neCols.findIndex(item=>item === options[0].start.col) !== -1){
+                                neCols.splice(neCols.findIndex(item=>item === options[0].start.col),1)
+
+                                this.render()
+                            }
+                            console.log(neCols);
+                        }
+                    }
+                }
+            }
+
+        });
+    </script>
+    <script>
+
+
+        // for increase sort only, free to change func name if conflit exists
+        function increase(a,b){
+            return a-b;
+        }
+
+        $(function () {
+            $("#getNeCols").click(function () {
+                console.log(neCols)
+                // safe pass
+                var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+                // lanuch ajax request
+                $.ajax({
+                    url: "{% url 'necheck' %}",  // request address
+                    {#headers: {"X-CSRFToken": '{{ csrf_token }}'},#}
+                    type: "POST",
+                    // data description
+                    data:{"neCols": JSON.stringify(neCols), "tableId": {{ table.id|safe }},'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    dataType: "json",  // returned data form
+                    async: true,
+                    success: function (data) {
+                        if(data.res === 1){
+                            // successfully post, goto next page
+                            window.location.href = "{% url 'direct' table.id%}";
+                        }
+                        else if(data.res === 0){
+                            // Select nothing, alert instead
+                            alert("Please select at least one column as NE-column!")
+                        }
+                    }
+                })
+            })
+        })
+
+    </script>
+
+{% endblock %}
+

@@ -1,0 +1,134 @@
+<script>
+    let process_task_id = null;
+    var evtSub = new EventSubscriber(onclose=function(e) {
+        console.error('Server socket closed unexpectedly');
+    });
+
+    evtSub.subscribe("started_process_all", function(data) {
+        const task_id = data["process_all_task_id"];
+        const curr_tables_count = data["processing_tables_count"]
+
+        process_task_id = task_id;
+
+        console.log("started_process_all", process_task_id, curr_tables_count);
+    });
+
+    evtSub.subscribe("task_end", function(data) {
+        const task_id = data['task_id'];
+
+        if (task_id === process_task_id) {
+            process_task_id = null;
+            console.log("Task " + task_id + " ended");
+        }
+
+        // update GLOBAL STATUS in home
+        $('tr .globalStatus').removeClass('processing');
+
+        // enable deleteAll and processAll buttons in home
+        $("#deleteAll, #processAll").removeClass("disabled");
+
+
+        {%  if request.resolver_match.url_name == 'export' %}
+            location.reload();
+        {% endif %}
+
+        console.log("task_end", task_id);
+    });
+
+    evtSub.subscribe("completed_table", function(data) {
+        let last_completed_table_id = data['last_completed_table_id'];
+        const elapsed = data['elapsed'];
+        const completed = data['completed'];
+
+        // update EXECUTION TIME in home
+        const current_table_row = $(`tr#${last_completed_table_id}`);
+        if (current_table_row) {
+            current_table_row.find('.table-time .time').text(elapsed);
+        }
+
+        console.log("completed_table", last_completed_table_id, elapsed, completed);
+    });
+
+    evtSub.subscribe("table_state_changed", function(data) {
+        const table_id = data['table_id'];
+        const global_state = data['global_state'];
+        const process_state = data['process_state'];
+        const tables_completed_count = data['tables_completed_count'];
+        const tables_in_progress_count = data['tables_in_progress_count'];
+        const last_edit = data['last_edit'];
+
+        // update INFO TABLES in header
+        $("#processing_tables_count > .number").text(tables_in_progress_count);
+        $("#processing_tables_completed > .number").text(tables_completed_count);
+
+        const current_table_row = $(`tr#${table_id}`);
+        let is_processing = false;
+
+        // update each STEP ICON in home
+        $.each(process_state, function (stepName, stepStatus) {
+            current_table_row.find(`.${stepName}`).find('i').removeClass().addClass(stepStatus);
+
+            if (stepStatus === 'DOING') {
+                is_processing = true;
+            }
+        });
+
+        // update GLOBAL STATUS in home
+        current_table_row.find('.globalStatus').removeClass().addClass(`globalStatus ${global_state}`);
+        if (is_processing) {
+            current_table_row.find('.globalStatus').addClass('processing');
+        } else {
+            current_table_row.find('.globalStatus').removeClass('processing');
+        }
+        console.log("table_state_changed", table_id, global_state, process_state, tables_completed_count, tables_in_progress_count, last_edit);
+    });
+
+    evtSub.subscribe("delete_all_finished", function(data) {
+        const deleted_tables = data['deleted_tables'];
+        location.reload();
+        console.log("delete_all_finished", deleted_tables);
+    });
+
+    evtSub.subscribe("import_status", function(data) {
+        const status = data['status'];
+
+        console.log("import_status", status);
+
+        if (status == "FAILURE") {
+            showError();
+            $("#loadGS .btn").removeClass("disabled");
+        } else {
+            {# closeLoading(); #}
+            const tables_count = parseInt($("#tables_count > .number").text());
+            $("#tables_count > .number").text(tables_count + 1);
+            console.log(data);
+
+            {%  if request.resolver_match.url_name == 'createTables' %}
+                location.reload();
+            {% endif %}
+        }
+    });
+
+    evtSub.subscribe("import_progress", function(data) {
+        const curr_table_count = data['current_table_count'];
+        const total_table_count = data['total_table_count'];
+        const table_gs_type = data['table_gs_type'];
+        console.log(curr_table_count);
+        // update TABLES NUMBER
+        $("#tables_count > .number").text(curr_table_count);
+
+        // Progress Loading
+        {% if tables_count != None %}
+            let already_loaded_tables_count = {{ tables_count }};
+            const table_to_load = total_table_count - already_loaded_tables_count;
+            const norm_curr_table_count = curr_table_count - already_loaded_tables_count;
+
+            const progress = ((norm_curr_table_count * 100) / table_to_load).toFixed();
+
+            $(`#${(table_gs_type).toLowerCase()} .progress .progress-bar`).css("width", `${progress}%`);
+        {% endif %}
+
+
+        console.log("import_progress", curr_table_count, total_table_count);
+    });
+</script>

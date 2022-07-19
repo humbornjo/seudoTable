@@ -1,0 +1,82 @@
+{% extends "seudo/base-dashboard.html" %}
+
+{% block content %}
+    {% if tables and not searching %}
+        <div id="list-table" class="table-responsive">
+
+            <table class="table table-hover table-bordered sde-table">
+
+                <tbody id="table-list-data">
+                    {% for table in tables %}
+                        {% if table.global_status == "DONE" %}
+                            <tr id="{{ table.id }}">
+    {#                            <td class="globalStatus {{ table.global_status }}"></td>#}
+                                <td class="table-name">
+                                    <strong>{{ table.file_name }}</strong>
+                                    <a href="{% url 'download' table.id %}"
+                                       class="btn btn-secondary btn-xs"
+                                       style="float: right;margin-right: 50px">
+                                        <i class="fas fa-download" style=""></i>
+                                        Download
+                                    </a>
+
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+
+{#                {% include 'mantistable/table-list.html' %}#}
+                </tbody>
+
+            </table>
+
+            {% if tables.has_prevtable_state_changedious or tables.has_next or tables.has_previous %}
+                <div class="pagination-wrapper">
+                    <span class="margin-r-15 ">
+                        {{ tables.start_index }}-{{ tables.end_index }} of {{ tables_count }}
+                    </span>
+
+                    <ul class="pagination pagination-sm pull-right">
+                        {% if tables.has_previous %}
+                            <li><a href="?page=1">&laquo;</a></li>
+                            <li><a href="?page={{ tables.previous_page_number }}">{{ tables.previous_page_number }}</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="active"><a href="?page={{ tables.number }}">{{ tables.number }}</a></li>
+
+                        {% if tables.has_next %}
+                            <li><a href="?page={{ tables.next_page_number }}">{{ tables.next_page_number }}</a></li>
+                            <li><a href="?page={{ tables.paginator.num_pages }}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+
+        </div>
+    {% else %}
+        <div class="text-center text-big margin">
+            <div class="text-huge bold">
+                No tables loaded.
+            </div>
+            <div class="spacer text-big">
+
+                You can start
+                <a href="{% url 'upload' %}" class="btn btn-primary">
+                    uploading some tables
+                </a>
+
+            </div>
+        </div>
+    {% endif %}
+
+
+{#{% if not tables and searching %}#}
+{#    <tr>#}
+{#        <td colspan="8" class="text-center text-big">#}
+{#            No tables found#}
+{#        </td>#}
+{#    </tr>#}
+{##}
+{#{% endif %}#}
+{% endblock %}

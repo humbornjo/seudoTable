@@ -1,0 +1,22 @@
+{% for table in tables %}
+    <tr id="table.id">
+        <td style="font-weight: bold;border-top: #6b6b6b 2px solid;word-wrap: break-word">
+            <strong>{{ table.file_name }}</strong>
+        </td>
+    </tr>
+{% endfor %}
+
+{% if not tables and searching %}
+    <tr>
+        <td colspan="8" class="text-center text-big">
+            No tables found
+        </td>
+    </tr>
+
+{% endif %}
+
+{% if last_upload %}
+<script>
+    alert("You have uploaded the file with the same name!");
+</script>
+{% endif %}

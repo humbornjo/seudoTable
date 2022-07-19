@@ -1,0 +1,227 @@
+{% extends "seudo/base-dashboard.html" %}
+
+{% block table_info %}
+    <ul class="tableInfo">
+        <li class="name">{{ table.file_name }}</li>
+        <li class="stats">
+            <span class="number">{{ table.num_cols }}</span>
+            <span class="description">columns</span>
+        </li>
+        <li class="stats">
+            <span class="number">{{ table.num_rows }}</span>
+            <span class="description">rows</span>
+        </li>
+        {% if step_num %}
+            <li class="stats">
+                <span class="number">{{ step_num }}</span>
+                <span class="description">step</span>
+            </li>
+        {% endif %}
+{#        <li class="stats">#}
+{#            <span class="number smaller">#}
+{##}
+{#                {% if table.gs_type == 'NONE' %}#}
+{#                    -#}
+{#                {% else %}#}
+{#                    {{ table.gs_type }}#}
+{#                {% endif %}#}
+{##}
+{#            </span>#}
+{#            <span class="description">Gold Standard</span>#}
+{#        </li>#}
+{#        {% if  request.resolver_match.url_name != 'start'  and request.resolvannotationser_match.url_name != 'editAnnotations' %}#}
+{#            <li class="runningTime stats">#}
+{#                <span class="number">{{ process_time }} </span>#}
+{#                <span class="description">Time to process</span>#}
+{#            </li>#}
+{#        {% endif %}#}
+    </ul>
+
+
+    <div class="buttons">
+        {#    TODO: enable run again#}
+        {#        {% block run_again %}#}
+        {#            <a href="{% url 'runAgainPhase' table.id %}?phaseName={{ phase_name }}" type="button"#}
+        {#               class="btn btn-secondary btn-sm tiny rerun" title="Run again this step">#}
+        {#                Run again#}
+        {#            </a>#}
+        {#        {% endblock %}#}
+        {% block reset %}
+            <p  type="button"
+               class="btn alert-run btn-sm tiny run {% if loading %} disabled {% endif %}"
+               title="Run entire process"
+               id="getNeCols"
+            >
+                Direct
+            </p>
+
+            <a href="{% url 'reset' table.id %}" type="button"
+               class="btn alert-danger btn-sm tiny reset {% if loading %} disabled {% endif %}"
+               title="Reset entire process"
+            >
+                Reset
+            </a>
+        {% endblock %}
+
+    </div>
+{% endblock %}
+
+{#{% block process %}#}
+{#    {% if table.process %}#}
+{#        <div class="multiStep-horizontal">#}
+{#            {% include 'mantistable/tables/process/multistep.html' %}#}
+{##}
+{#            <!-- close arrow-->#}
+{#            <i class="fas fa-chevron-up close-multistep"></i>#}
+{##}
+{#        </div>#}
+{#    {% endif %}#}
+{#{% endblock %}#}
+
+{% block content %}
+    {% if loading %}
+        <div id="processing">
+            <div class="flex align-center">
+                <i class="fas fa-spinner fa-pulse"></i>
+                <span class="text">Processing...</span>
+            </div>
+            <span class="text-tiny">While waiting, you can explore seudoTable as you want</span>
+        </div>
+
+    {% else %}
+
+        <div id="handsontable"></div>
+        <aside class="control-sidebar control-sidebar-light">
+            <!-- Content of the sidebar goes here -->
+            {% block sidebar %}
+                <div id="infoBox">
+                    <button type="button" class="close" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+
+                    <div id="generalInfo"></div>
+                    {% verbatim %}
+                    <script id="template_generalInfo_cell" type="text/x-handlebars-template">
+                        <p class="cell-title">{{ cell_title }}</p>
+
+                        <div class="cell-coords">
+                            <div>
+                                <span class="key">Column header:</span>
+                                <span class="value">{{ cell_header }} </span>
+                            </div>
+
+                            <div class="flex">
+                                <div class="coord">
+                                    <span class="key">Row index (no sorted):</span>
+                                    <span class="value">{{ cell_row_coord }}</span>
+                                </div>
+                                <div class="coord">
+                                    <span class="key">Column index:</span>
+                                    <span class="value">{{ cell_col_coord }}</span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{#if step_1 }}
+                            <div class="step-name"><span>Direct Search</span></div>
+                            <div id="data-preparation"></div>
+                            <div>
+                                <span class="bold block">
+                                    Result: <a href="{{ direct_res.url }}"  >{{ direct_res.label }}</a>
+                                </span>
+                                <i class="bold block">
+                                    Confidence: {{ direct_res.conf }}
+                                </i>
+
+                            </div>
+                        {{/if }}
+
+                        {{#if step_2 }}
+
+                            <div class="step-name"><span>seudo Search</span></div>
+                            <div id="data-preparation">
+                                <ul>
+                                    {{#each candidate}}
+                                        <li>
+                                            <a class="bold block" href="{{ this.url }}"  >{{ this.label }}</a>
+                                        </li>
+                                        <li class="bold block">
+                                            Confidence: {{ this.conf }}
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        {{/if }}
+                    </script>
+                    {% endverbatim %}
+
+                    {% verbatim %}
+                    <script id="template_generalInfo_header" type="text/x-handlebars-template">
+                        <p class="cell-title">{{ type_title }}</p>
+
+                        {{#if candidate}}
+                            <div class="step-name"><span>Top 3 types</span></div>
+                            <div id="data-preparation">
+                                <ul>
+                                    {{#each candidate}}
+                                        <li>
+                                            <a class="bold block" href="{{ this.url }}"  >{{ this.label }}</a>
+                                        </li>
+                                        <li class="bold block">
+                                            Confidence: {{ this.conf }}
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        {{/if }}
+
+                    </script>
+                    {% endverbatim %}
+
+
+                    {% block infoBox_content %}{% endblock %}
+
+                </div>
+            {% endblock %}
+        </aside>
+    {% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script>
+        var neCols=[];
+        var nonCols=[];
+
+
+        {% if ne_cols %}
+            neCols = {{ ne_cols }};
+            nonCols = {{ no_ann_cols }};
+        {% endif %}
+
+        console.log(neCols)
+
+        function isNe(col_index) {
+            col_index = parseInt(col_index);
+            return neCols.includes(col_index);
+        }
+
+        console.log(nonCols)
+
+
+        function colorColumnsByType(instance, td, row, col, prop, value, cellProperties) {
+            Handsontable.renderers.TextRenderer.apply(this, arguments);
+            if (isNe(col)) {
+                td.style.color = '#20799f';
+                td.style.background = 'rgba(32, 121, 159,.08)';
+            }
+            td.innerHTML=td.innerText
+        }
+        console.log(neCols)
+
+
+    </script>
+{% endblock %}
+

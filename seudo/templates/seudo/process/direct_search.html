@@ -1,0 +1,227 @@
+{% extends "seudo/base-process.html" %}
+
+{% block title %}
+    seudoTable
+{% endblock %}
+
+{#{% block infoBox_content %}#}
+{#    <div id="data-preparation"></div>#}
+{##}
+{#     {% include 'seudo/handlebars_templates/direct_search.handlebars' %}#}
+{##}
+{#{% endblock %}#}
+
+
+{% block run_again %}{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script>
+        {# HANDSONTABLE #}
+        let data = {{table_datas|safe}};
+
+        {#let table_comments = [];#}
+        {#{% if table_comments %}#}
+        {#    table_comments = {{table_comments|safe}};#}
+        {##}
+        {#    $.each(table_comments, function (key, value) {#}
+        {#        value['comment']['value'] = `<em>This cell has been normalized</em>#}
+        {#                        <br/><strong>Old value:</strong> ${value['comment']['value']}#}
+        {#                        <br/><span class='readMore'>Click the cell to read more...</span>`#}
+        {#    });#}
+        {##}
+        {#{% endif %}#}
+
+        let container = document.getElementById('handsontable');
+
+        console.log(neCols)
+
+        handsontable = new Handsontable(container, {
+            colHeaders: {{ table.header|safe }},
+            columnSorting: false,
+            data: data,
+            licenseKey: 'non-commercial-and-evaluation',
+            minSpareRows: 0,
+            preventOverflow: 'horizontal',
+            readOnly: true,
+            copyable: true,
+            sortIndicator: true,
+            selectionMode: 'single',
+            stretchH: 'all',
+            height: calcPageContentHeight(),
+
+            cells: function (row, col, prop) {
+                    let cellProperties = {};
+                    cellProperties.renderer = colorColumnsByType; // uses function directly
+                    return cellProperties;
+             }
+
+            {#contextMenu: {#}
+            {#    items: {#}
+            {#        "menu-fix-select": {#}
+            {#            key: "fix_select",#}
+            {#            name: "Select as NE column",#}
+            {#            callback: function(key, options, selection , clickEvent) {#}
+            {#                if (!neCols.includes(options[0].start.col)){#}
+            {#                    neCols.push(options[0].start.col)#}
+            {#                    neCols.sort(increase)#}
+            {##}
+            {#                    this.render()#}
+            {#                }#}
+            {#                console.log(neCols);#}
+            {#            }#}
+            {#        }#}
+            {#    }#}
+            {# }#}
+
+        });
+
+    </script>
+    <script>
+
+        Handsontable.hooks.add('beforeOnCellMouseOver', function (events, coord, td) {
+
+            $('#divComment').remove();
+
+            // hack to remove multiple instance of comments
+            if ($('.htComments').length > 1) {
+                $('.htCommentsContainer .htComments:not(:last-child)').remove();
+            }
+
+            const commentsPlugin = handsontable.getPlugin('comments');
+
+            if (commentsPlugin !== undefined) {
+                const comment = commentsPlugin.getCommentAtCell(coord.row, coord.col);
+
+                if (comment !== undefined || comment != null) {
+                    $('textarea.htCommentTextArea').hide();
+
+                    const divComment = `<div id='divComment' class='htCommentTextArea'>${comment}</div>`;
+
+                    $(divComment).appendTo('.htComments');
+                }
+            }
+         });
+
+        // listener to click on cell.
+        Handsontable.hooks.add('afterOnCellMouseDown', function (event, coords) {
+            handsontable.setCellMeta(coords.row, coords.col, 'className', '');
+
+            const sortedPlugin = handsontable.getPlugin('columnSorting');
+
+            let coordsCol = coords.col;
+            let coordsRow;
+
+            if (sortedPlugin !== 'undefined' && sortedPlugin.isSorted()) {
+                coordsRow = handsontable.runHooks('modifyRow', coords.row);
+            } else {
+                coordsRow = coords.row;
+            }
+
+            let validClick = true;
+
+            // if a cell or a header with show info button
+            // has been clicked
+            if ($(event.srcElement).hasClass('htCommentCell')
+                || (coords.row === -1 && handsontable.getColHeader(coordsCol).indexOf('show-more') > -1)) {
+                validClick = true;
+             }
+
+            if (validClick) {
+                /*Session.set('clickedRow', coordsRow);
+                Session.set('clickedCol', coordsCol);*/
+
+                openRightSidebar();
+
+                {% if right_sidebar %}
+                    let coord;
+
+                    if (coordsRow === -1) {
+                        // Header
+                        coord = `col${coordsCol}`;
+                    } else {
+                        // Cell
+                        coord = `row${coordsRow}col${coordsCol}`;
+                    }
+
+                    let right_sidebar = {{ right_sidebar | safe }};
+
+                    if (right_sidebar) {
+                        const currentCellOrColumn = right_sidebar[coord];
+                        console.log(currentCellOrColumn)
+                        // GENERAL INFO
+                        let template_generalInfo;
+
+                        if (coordsRow === -1) {
+                            // Header
+                            template_generalInfo = $("#template_generalInfo_header").html();
+                        } else {
+                            // Cell
+                            template_generalInfo = $("#template_generalInfo_cell").html();
+                        }
+
+                        const compiled_template_generalInfo = Handlebars.compile(template_generalInfo);
+                        $('#generalInfo').html(compiled_template_generalInfo(currentCellOrColumn));
+                    }
+                {% endif %}
+                {#const template_dataPreparation = $('#direct_search_handlebar').html();#}
+                {#const compiled_template_dataPreparation = Handlebars.compile(template_dataPreparation);#}
+                {#$('#data-preparation').html(compiled_template_dataPreparation(currentCellOrColumn));#}
+
+            }
+        });
+    </script>
+    <script>
+        $(function () {
+            $('body').addClass('hasMultiStep inner-control-sidebar');
+
+            // highlight table columns
+            $('#predicate-annotation').on('mouseenter', '.highlightCol tbody tr', function () {
+                updateHandsontableSetting($(this).data('col'), subj_index);
+            });
+            $('#predicate-annotation').on('mouseleave', '.highlightCol tbody tr', function () {
+                resetHandsontableSettings();
+            });
+        });
+    </script>
+    <script>
+        // for increase sort only, free to change func name if conflit exists
+        function increase(a,b){
+            return a-b;
+        }
+
+        document.getElementById("getNeCols").innerHTML="seudo";
+
+        $(function () {
+            $("#getNeCols").click(function () {
+                console.log(neCols)
+                // safe pass
+                var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+                // lanuch ajax request
+                $.ajax({
+                    url: "{% url 'necheck' %}",  // request address
+                    headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                    type: "POST",
+                    // data description
+                    data:{"neCols": JSON.stringify(neCols), "tableId": {{ table.id|safe }},'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    dataType: "json",  // returned data form
+                    async: true,
+                    success: function (data) {
+                        if(data.res === 1){
+                            // successfully post, goto next page
+                            window.location.href = "{% url 'seudo' table.id %}";
+                        }
+                        else if(data.res === 0){
+                            // Select nothing, alert instead
+                            alert("Please select at least one column as NE-column!")
+                        }
+                    }
+                })
+            })
+        })
+
+    </script>
+
+{% endblock %}
+

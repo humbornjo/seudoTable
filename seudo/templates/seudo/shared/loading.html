@@ -1,0 +1,40 @@
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="loadinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="loading">
+            <i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
+            <span>Loading...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="loadinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <span>An error occurred</span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function showLoading() {
+        $('#loadingModal').modal({ keyboard: false });
+    }
+
+    function showError() {
+      $('#errorModal').modal();
+    }
+    
+    function closeLoading() {
+        $('#loadingModal').modal('hide');
+    }
+</script>
+ 
